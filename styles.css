@@ -1,0 +1,142 @@
+:root {
+  --sn-bg: #ffffff;
+  --sn-bg-secondary: #f9fafb;
+  --sn-border: #e5e7eb;
+  --sn-text: #111827;
+  --sn-text-secondary: #6b7280;
+  --sn-text-muted: #9ca3af;
+  --sn-button-hover: #e5e7eb;
+  --sn-button-text: #374151;
+  --sn-scroll-thumb: #d1d5db;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sn-bg: #1f2937;
+    --sn-bg-secondary: #111827;
+    --sn-border: #374151;
+    --sn-text: #f3f4f6;
+    --sn-text-secondary: #9ca3af;
+    --sn-text-muted: #6b7280;
+    --sn-button-hover: #374151;
+    --sn-button-text: #d1d5db;
+    --sn-scroll-thumb: #4b5563;
+  }
+}
+
+#sidenote-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  height: 360px;
+  background: var(--sn-bg);
+  border: 1px solid var(--sn-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+#sidenote-container * {
+  all: unset;
+}
+
+/* Header */
+#sidenote-container .sn-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: var(--sn-bg-secondary);
+  border-bottom: 1px solid var(--sn-border);
+}
+
+/* URL Input */
+#sidenote-container .sn-url-input {
+  flex: 1;
+  padding: 4px;
+  border: 1px solid var(--sn-border);
+  border-radius: 3px;
+  background: var(--sn-bg);
+  color: var(--sn-text-secondary);
+  font-size: 11px;
+  font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+#sidenote-container .sn-url-input::placeholder {
+  color: var(--sn-text-muted);
+}
+
+/* Close Button */
+#sidenote-container .sn-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  padding: 0;
+  color: var(--sn-text-muted);
+}
+
+#sidenote-container .sn-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2;
+}
+
+#sidenote-container .sn-btn:hover {
+  background: var(--sn-button-hover);
+  color: var(--sn-button-text);
+}
+
+/* Textarea */
+#sidenote-container .sn-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 8px;
+  font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  resize: none;
+  background: var(--sn-bg);
+  color: var(--sn-text);
+  overflow-y: auto;
+  overflow-wrap: break-word;
+}
+
+#sidenote-container .sn-textarea::placeholder {
+  color: var(--sn-text-muted);
+}
+
+#sidenote-container .sn-textarea::-webkit-scrollbar {
+  width: 6px;
+}
+
+#sidenote-container .sn-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#sidenote-container .sn-textarea::-webkit-scrollbar-thumb {
+  background: var(--sn-scroll-thumb);
+  border-radius: 3px;
+}
+
+#sidenote-container .sn-textarea::-webkit-scrollbar-thumb:hover {
+  background: var(--sn-text-muted);
+}

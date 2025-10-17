@@ -1,0 +1,12 @@
+{
+  "name": "sidenote",
+  "version": "1.0.0",
+  "description": "Quick notes for every webpage",
+  "keywords": [
+    "browser-extension",
+    "notes",
+    "productivity"
+  ],
+  "author": "meands",
+  "license": "MIT"
+}
