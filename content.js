@@ -7,9 +7,10 @@
         if (!state) {
             loadInitialState((initialNote, initialPattern) => {
                 state = NotepadState.getInstance(initialNote, initialPattern);
-                injectNote(state);
+                const noteElement = state.getNoteElement();
+                document.body.appendChild(noteElement);
                 attachEventListeners(state);
-                showNote(state.getNoteElement());
+                showNote(noteElement);
             });
             return;
         }
@@ -22,10 +23,36 @@
         }
     }
 
+    function updateUrl() {
+        const currentUrl = window.location.href;
+
+        if (!state || state.getCurrentPattern() === currentUrl) {
+            console.log('URL unchanged, skipping update');
+            return;
+        }
+
+        console.log('URL changed, loading new notes for:', currentUrl);
+        loadInitialState((note, pattern) => {
+            state.loadNote(note, pattern);
+        });
+    }
+
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.action === 'ping') {
+            sendResponse({ alive: true });
+            return;
+        }
+
         if (message.action === 'toggleNotes') {
             toggleNotepad();
             sendResponse({ success: true });
+            return;
+        }
+
+        if (message.action === 'urlChanged') {
+            updateUrl(message.url);
+            sendResponse({ success: true });
+            return;
         }
     });
 })();
@@ -47,19 +74,10 @@ function loadInitialState(callback) {
     });
 }
 
-function injectNote(state) {
-    const noteElement = state.getNoteElement();
-    document.body.appendChild(noteElement);
-
-    hideNote(noteElement);
-}
-
-function getStorageKey(url) {
-    return url;
-}
-
-function createNoteHTML() {
-    return `
+function createNoteElement() {
+    const noteElement = document.createElement('div');
+    noteElement.id = 'sidenote-container';
+    noteElement.innerHTML = `
     <div class="sn-header">
         <input 
             type="text" 
@@ -77,24 +95,7 @@ function createNoteHTML() {
         placeholder="Notes..."
     ></textarea>
     `;
-}
-
-
-function createNoteElement() {
-    const noteElement = document.createElement('div');
-    noteElement.id = 'sidenote-container';
-    noteElement.innerHTML = createNoteHTML();
     return noteElement;
-};
-
-function updateStatus(noteElement, text) {
-    const status = noteElement.querySelector('.sn-status');
-    if (status) status.textContent = text;
-};
-
-function getTextareaContent(noteElement) {
-    const textarea = noteElement.querySelector('.sn-textarea');
-    return textarea ? textarea.value : '';
 };
 
 function setTextareaContent(noteElement, content) {
@@ -112,10 +113,6 @@ function setUrlPattern(noteElement, pattern) {
     if (input) input.value = pattern;
 };
 
-function toggleMinimize(noteElement) {
-    noteElement.classList.toggle('sn-minimized');
-};
-
 function showNote(noteElement) {
     noteElement.style.display = 'flex';
 };
@@ -129,23 +126,11 @@ function isNoteVisible(noteElement) {
 }
 
 function saveNoteToStorage(pattern, content, onSuccess) {
-    const key = getStorageKey(pattern);
-    chrome.storage.local.set({
-        [key]: content,
-    }, onSuccess);
-};
-
-function loadNoteFromStorage(pattern, onSuccess) {
-    const key = getStorageKey(pattern);
-    chrome.storage.local.get([key], (result) => {
-        const content = result[key] || '';
-        onSuccess(content);
-    });
+    chrome.storage.local.set({ [pattern]: content }, onSuccess);
 };
 
 function removeNoteFromStorage(pattern, onSuccess) {
-    const key = getStorageKey(pattern);
-    chrome.storage.local.remove(key, onSuccess);
+    chrome.storage.local.remove(pattern, onSuccess);
 };
 
 class NotepadState {
@@ -185,25 +170,30 @@ class NotepadState {
         return this.#noteElement;
     }
 
-    getNote() {
-        return this.#note;
+    getCurrentPattern() {
+        return this.#currentPattern;
+    }
+
+    loadNote(noteContent, pattern) {
+        this.#note = noteContent;
+        this.#currentPattern = pattern;
+        setTextareaContent(this.#noteElement, this.#note);
+        setUrlPattern(this.#noteElement, pattern);
     }
 
     setNote(noteContent) {
         this.#note = noteContent;
-        setTextareaContent(this.#noteElement, this.#note);
-
         const pattern = getUrlPattern(this.#noteElement);
         saveNoteToStorage(pattern, this.#note, () => { });
     }
 
-    setCurrentPattern(pattern) {
+    setCurrentPattern(pattern, replace = false) {
         const prevPattern = this.#currentPattern;
         this.#currentPattern = pattern;
 
         setUrlPattern(this.#noteElement, pattern);
 
-        if (prevPattern && prevPattern !== pattern) {
+        if (replace && prevPattern && prevPattern !== pattern) {
             removeNoteFromStorage(prevPattern, () => {
                 saveNoteToStorage(pattern, this.#note, () => { });
             });
@@ -214,20 +204,7 @@ class NotepadState {
 function attachEventListeners(state) {
     const noteElement = state.getNoteElement();
 
-    const handleTextareaInput = (e) =>
-        state.setNote(e.target.value)
-
-    const handleUrlPatternInput = (e) =>
-        state.setCurrentPattern(e.target.value)
-
-    const handleClose = () =>
-        hideNote(noteElement)
-
-    const closeBtn = noteElement.querySelector('.sn-close');
-    const urlInput = noteElement.querySelector('.sn-url-input');
-    const textarea = noteElement.querySelector('.sn-textarea');
-
-    closeBtn?.addEventListener('click', handleClose);
-    textarea?.addEventListener('input', handleTextareaInput);
-    urlInput?.addEventListener('change', handleUrlPatternInput);
+    noteElement.querySelector('.sn-close')?.addEventListener('click', () => hideNote(noteElement));
+    noteElement.querySelector('.sn-textarea')?.addEventListener('input', (e) => state.setNote(e.target.value));
+    noteElement.querySelector('.sn-url-input')?.addEventListener('change', (e) => state.setCurrentPattern(e.target.value, true));
 }

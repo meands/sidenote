@@ -3,7 +3,7 @@
   "name": "Sidenote",
   "version": "1.0.0",
   "description": "Quick notes for every webpage",
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab", "scripting", "webNavigation"],
   "background": {
     "service_worker": "background.js"
   },
