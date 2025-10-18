@@ -24,7 +24,7 @@
     }
 
     function updateUrl() {
-        const currentUrl = window.location.href;
+        const currentUrl = getUrlWithoutHash(window.location.href);
 
         if (!state || state.getCurrentPattern() === currentUrl) {
             console.log('URL unchanged, skipping update');
@@ -58,7 +58,7 @@
 })();
 
 function loadInitialState(callback) {
-    const currentUrl = window.location.href;
+    const currentUrl = getUrlWithoutHash(window.location.href);
 
     chrome.storage.local.get(null, (items) => {
         const patterns = Object.keys(items);
@@ -207,4 +207,9 @@ function attachEventListeners(state) {
     noteElement.querySelector('.sn-close')?.addEventListener('click', () => hideNote(noteElement));
     noteElement.querySelector('.sn-textarea')?.addEventListener('input', (e) => state.setNote(e.target.value));
     noteElement.querySelector('.sn-url-input')?.addEventListener('change', (e) => state.setCurrentPattern(e.target.value, true));
+}
+
+function getUrlWithoutHash(url) {
+    const hashIndex = url.indexOf('#');
+    return hashIndex !== -1 ? url.substring(0, hashIndex) : url;
 }
