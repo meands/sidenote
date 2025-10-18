@@ -45,8 +45,10 @@
   padding: 0;
 }
 
-#sidenote-container * {
+#sidenote-container *:not(svg):not(path) {
   all: unset;
+  display: revert;
+  box-sizing: border-box;
 }
 
 /* Header */
@@ -96,7 +98,6 @@
 #sidenote-container .sn-btn svg {
   width: 14px;
   height: 14px;
-  stroke-width: 2;
 }
 
 #sidenote-container .sn-btn:hover {
